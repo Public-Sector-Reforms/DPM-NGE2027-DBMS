@@ -3,43 +3,45 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<meta name="description" content="Papua New Guinea DPM — Database Management System for Public Servants & Agency Heads Resigning to Contest NGE 2027 (prototype for internal DPM/TWT review)">
-<meta name="theme-color" content="#0A1628">
+<meta name="description" content="Papua New Guinea Department of Personnel Management — Resignation Register for Public Servants &amp; Agency Heads Contesting NGE 2027">
+<meta name="theme-color" content="#FFFFFF">
 <meta name="application-name" content="DPM NGE2027 DBMS">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="NGE2027 DBMS">
-<title>DPM — NGE 2027 Resignation Register (Prototype DBMS)</title>
+<title>DPM — NGE 2027 Resignation Register</title>
 <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=DM+Mono:wght@400;500&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <style>
 /* ═══════════════════════════════════════════
-   DESIGN TOKENS (matches PNG DRBMS prototype)
+   DESIGN TOKENS
 ═══════════════════════════════════════════ */
 :root {
-  --navy:        #000000;
-  --navy-mid:    #0C0C0C;
-  --navy-card:   #161616;
-  --navy-hover:  #232323;
-  --gold:        #F0A500;
-  --gold-light:  #FFB822;
-  --gold-dim:    rgba(240,165,0,0.12);
-  --teal:        #00C9B1;
-  --teal-dim:    rgba(0,201,177,0.12);
-  --red:         #E8394A;
-  --red-dim:     rgba(232,57,74,0.12);
-  --blue:        #3B82F6;
-  --green:       #22C55E;
-  --border:      rgba(255,255,255,0.09);
-  --border-gold: rgba(240,165,0,0.35);
-  --txt-pri:     #FFFFFF;
-  --txt-sec:     rgba(255,255,255,0.62);
-  --txt-muted:   rgba(255,255,255,0.38);
+  --navy:        #FFFFFF;
+  --navy-mid:    #F7F6F3;
+  --navy-card:   #FFFFFF;
+  --navy-hover:  #EFEDE8;
+  --gold:        #C9870A;
+  --gold-light:  #E0A020;
+  --gold-dim:    rgba(201,135,10,0.12);
+  --on-gold:     #1A1200;
+  --teal:        #0E9E88;
+  --teal-dim:    rgba(14,158,136,0.12);
+  --red:         #D9304A;
+  --red-dim:     rgba(217,48,74,0.10);
+  --blue:        #2563EB;
+  --green:       #15803D;
+  --border:      rgba(17,17,17,0.10);
+  --border-gold: rgba(201,135,10,0.35);
+  --txt-pri:     #111111;
+  --txt-sec:     rgba(17,17,17,0.64);
+  --txt-muted:   rgba(17,17,17,0.42);
   --sidebar-w:   268px;
   --topbar-h:    58px;
-  --banner-h:    30px;
+  --banner-h:    0px;
   --radius:      10px;
   --font-head:   'Sora', sans-serif;
   --font-body:   'Outfit', sans-serif;
@@ -49,24 +51,14 @@
 html { scroll-behavior: smooth; }
 body { font-family: var(--font-body); background: var(--navy); color: var(--txt-pri); min-height: 100vh; overflow-x: hidden; -webkit-font-smoothing: antialiased; padding-top: var(--banner-h); }
 
-/* PROTOTYPE BANNER */
-#prototype-banner {
-  position: fixed; top: 0; left: 0; right: 0; height: var(--banner-h); z-index: 10000;
-  background: repeating-linear-gradient(135deg, #E8394A, #E8394A 12px, #B8283A 12px, #B8283A 24px);
-  color: #fff; text-align: center;
-  font-family: var(--font-head); font-size: 11.5px; font-weight: 700;
-  letter-spacing: 0.04em; text-transform: uppercase;
-  display: flex; align-items: center; justify-content: center; padding: 0 10px;
-}
-
 /* LOGIN */
 #login-screen { position: fixed; top: var(--banner-h); left: 0; right: 0; bottom: 0; z-index: 9999; background: var(--navy); display: flex; flex-direction: column; align-items: center; justify-content: center; overflow: hidden; }
 .login-bg { position: absolute; inset: 0; background: radial-gradient(ellipse 80% 60% at 50% -10%, rgba(240,165,0,0.08) 0%, transparent 70%), radial-gradient(ellipse 50% 40% at 90% 90%, rgba(0,201,177,0.06) 0%, transparent 60%); pointer-events: none; }
-.login-grid { position: absolute; inset: 0; opacity: 0.04; background-image: linear-gradient(rgba(255,255,255,0.5) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.5) 1px, transparent 1px); background-size: 40px 40px; pointer-events: none; }
+.login-grid { position: absolute; inset: 0; opacity: 0.04; background-image: linear-gradient(rgba(17,17,17,0.5) 1px, transparent 1px), linear-gradient(90deg, rgba(17,17,17,0.5) 1px, transparent 1px); background-size: 40px 40px; pointer-events: none; }
 .login-box { position: relative; z-index: 2; width: 430px; max-width: 94vw; background: var(--navy-card); border: 1px solid var(--border); border-radius: 16px; padding: 40px 36px; box-shadow: 0 24px 80px rgba(0,0,0,0.5); animation: slideUp 0.5s ease; }
 @keyframes slideUp { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: translateY(0); } }
 .login-emblem { display: flex; align-items: center; gap: 14px; margin-bottom: 24px; }
-.emblem-seal { width: 60px; height: 60px; flex-shrink: 0; background: #fff; border: 1.5px solid var(--border-gold); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 26px; padding: 6px; }
+.emblem-seal { width: 84px; height: 84px; flex-shrink: 0; background: #fff; border: 1.5px solid var(--border-gold); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 26px; padding: 8px; }
 .emblem-seal img { width: 100%; height: 100%; object-fit: contain; }
 .emblem-text { flex: 1; }
 .emblem-text .country { font-family: var(--font-head); font-size: 11px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--gold); margin-bottom: 3px; }
@@ -77,20 +69,20 @@ body { font-family: var(--font-body); background: var(--navy); color: var(--txt-
 .login-sub { font-size: 13px; color: var(--txt-sec); margin-bottom: 22px; line-height: 1.5; }
 .l-form-group { margin-bottom: 15px; }
 .l-form-label { display: block; font-size: 11px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--txt-muted); margin-bottom: 7px; }
-.l-form-input { width: 100%; padding: 11px 14px; background: rgba(255,255,255,0.05); border: 1px solid var(--border); border-radius: 8px; color: var(--txt-pri); font-family: var(--font-body); font-size: 14px; transition: border-color 0.2s, background 0.2s; outline: none; }
+.l-form-input { width: 100%; padding: 11px 14px; background: rgba(17,17,17,0.05); border: 1px solid var(--border); border-radius: 8px; color: var(--txt-pri); font-family: var(--font-body); font-size: 14px; transition: border-color 0.2s, background 0.2s; outline: none; }
 .l-form-input:focus { border-color: var(--gold); background: rgba(240,165,0,0.05); }
 .l-role-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 20px; }
 .l-role-chip { padding: 9px 10px; border-radius: 8px; border: 1px solid var(--border); font-size: 11.5px; font-weight: 500; color: var(--txt-sec); cursor: pointer; text-align: center; transition: all 0.15s; background: transparent; }
 .l-role-chip:hover { border-color: rgba(240,165,0,0.4); color: var(--gold); }
 .l-role-chip.selected { background: var(--gold-dim); border-color: var(--border-gold); color: var(--gold); }
 .l-role-chip .role-icon { font-size: 16px; display: block; margin-bottom: 3px; }
-.login-btn { width: 100%; padding: 13px; background: var(--gold); color: var(--navy-mid); border: none; border-radius: 8px; font-family: var(--font-head); font-size: 14px; font-weight: 700; cursor: pointer; letter-spacing: 0.02em; transition: background 0.15s, transform 0.1s; }
+.login-btn { width: 100%; padding: 13px; background: var(--gold); color: var(--on-gold); border: none; border-radius: 8px; font-family: var(--font-head); font-size: 14px; font-weight: 700; cursor: pointer; letter-spacing: 0.02em; transition: background 0.15s, transform 0.1s; }
 .login-btn:hover { background: var(--gold-light); transform: translateY(-1px); }
 .login-btn:active { transform: translateY(0); }
 .login-notice { margin-top: 16px; font-size: 11px; color: var(--txt-muted); text-align: center; line-height: 1.6; }
 .login-notice a { color: var(--gold); text-decoration: none; }
 .login-footer { position: relative; z-index: 2; text-align: center; margin-top: 20px; font-size: 11px; color: var(--txt-muted); }
-.login-error { background: var(--red-dim); border: 1px solid rgba(232,57,74,0.3); border-radius: 6px; padding: 10px 14px; font-size: 12.5px; color: #FDA5AD; margin-bottom: 14px; display: none; }
+.login-error { background: var(--red-dim); border: 1px solid rgba(232,57,74,0.3); border-radius: 6px; padding: 10px 14px; font-size: 12.5px; color: #B3202F; margin-bottom: 14px; display: none; }
 
 /* APP LAYOUT */
 #app { display: none; }
@@ -98,12 +90,12 @@ body { font-family: var(--font-body); background: var(--navy); color: var(--txt-
 #sidebar { position: fixed; left: 0; top: var(--banner-h); bottom: 0; width: var(--sidebar-w); background: var(--navy-mid); border-right: 1px solid var(--border); display: flex; flex-direction: column; z-index: 200; transition: transform 0.3s ease; }
 .sb-header { padding: 18px 20px 16px; border-bottom: 1px solid var(--border); }
 .sb-logo-row { display: flex; align-items: center; gap: 12px; }
-.sb-seal { width: 40px; height: 40px; flex-shrink: 0; background: #fff; border: 1px solid var(--border-gold); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 18px; padding: 4px; }
+.sb-seal { width: 56px; height: 56px; flex-shrink: 0; background: #fff; border: 1px solid var(--border-gold); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 18px; padding: 5px; }
 .sb-seal img { width: 100%; height: 100%; object-fit: contain; }
 .sb-text .sb-badge { font-size: 9px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--gold); margin-bottom: 2px; }
 .sb-text .sb-title { font-family: var(--font-head); font-size: 13px; font-weight: 700; line-height: 1.3; color: var(--txt-pri); }
 .sb-text .sb-version { font-size: 10px; color: var(--txt-muted); margin-top: 1px; }
-.sb-user-pill { margin-top: 12px; padding: 8px 12px; background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: 8px; display: flex; align-items: center; gap: 10px; }
+.sb-user-pill { margin-top: 12px; padding: 8px 12px; background: rgba(17,17,17,0.03); border: 1px solid var(--border); border-radius: 8px; display: flex; align-items: center; gap: 10px; }
 .sb-avatar { width: 28px; height: 28px; border-radius: 50%; background: var(--gold-dim); border: 1px solid var(--border-gold); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; color: var(--gold); flex-shrink: 0; }
 .sb-user-info .sb-user-name { font-size: 12px; font-weight: 600; }
 .sb-user-info .sb-user-role { font-size: 10px; color: var(--txt-muted); }
@@ -111,7 +103,7 @@ body { font-family: var(--font-body); background: var(--navy); color: var(--txt-
 .sb-nav::-webkit-scrollbar { width: 0; }
 .nav-section { padding: 12px 18px 5px; font-size: 9.5px; font-weight: 700; letter-spacing: 0.13em; text-transform: uppercase; color: var(--txt-muted); }
 .nav-item { display: flex; align-items: center; gap: 11px; padding: 9px 18px; cursor: pointer; font-size: 13px; font-weight: 400; color: var(--txt-sec); border-left: 2.5px solid transparent; transition: all 0.15s; position: relative; }
-.nav-item:hover { background: rgba(255,255,255,0.04); color: var(--txt-pri); border-left-color: rgba(240,165,0,0.3); }
+.nav-item:hover { background: rgba(17,17,17,0.04); color: var(--txt-pri); border-left-color: rgba(240,165,0,0.3); }
 .nav-item.active { background: var(--gold-dim); color: var(--gold); border-left-color: var(--gold); font-weight: 600; }
 .nav-icon { width: 17px; text-align: center; font-size: 14px; flex-shrink: 0; }
 .nav-badge { margin-left: auto; background: var(--red); color: #fff; font-size: 9px; font-weight: 700; font-family: var(--font-mono); padding: 1px 6px; border-radius: 10px; letter-spacing: 0.04em; }
@@ -125,16 +117,16 @@ body { font-family: var(--font-body); background: var(--navy); color: var(--txt-
 #hamburger { display: none; position: fixed; top: calc(var(--banner-h) + 12px); left: 12px; z-index: 300; width: 38px; height: 38px; background: var(--navy-card); border: 1px solid var(--border); border-radius: 8px; flex-direction: column; align-items: center; justify-content: center; gap: 5px; cursor: pointer; }
 #hamburger span { display: block; width: 18px; height: 1.5px; background: var(--txt-sec); border-radius: 2px; transition: all 0.2s; }
 #main { margin-left: var(--sidebar-w); min-height: 100vh; flex: 1; }
-#topbar { position: sticky; top: var(--banner-h); z-index: 150; height: var(--topbar-h); background: rgba(5,14,29,0.92); backdrop-filter: blur(16px); border-bottom: 1px solid var(--border); padding: 0 28px; display: flex; align-items: center; gap: 14px; }
+#topbar { position: sticky; top: var(--banner-h); z-index: 150; height: var(--topbar-h); background: rgba(255,255,255,0.88); backdrop-filter: blur(16px); border-bottom: 1px solid var(--border); padding: 0 28px; display: flex; align-items: center; gap: 14px; }
 .tb-title { font-family: var(--font-head); font-size: 15px; font-weight: 600; flex: 1; }
 .tb-date { font-size: 11.5px; color: var(--txt-muted); font-family: var(--font-mono); }
 .tb-actions { display: flex; gap: 8px; align-items: center; }
 .btn { padding: 7px 15px; border-radius: 7px; font-size: 12.5px; font-family: var(--font-body); font-weight: 500; cursor: pointer; border: none; transition: all 0.15s; }
 .btn-ghost { background: transparent; color: var(--txt-sec); border: 1px solid var(--border); }
-.btn-ghost:hover { background: rgba(255,255,255,0.05); color: var(--txt-pri); }
-.btn-gold { background: var(--gold); color: var(--navy-mid); font-weight: 700; }
+.btn-ghost:hover { background: rgba(17,17,17,0.05); color: var(--txt-pri); }
+.btn-gold { background: var(--gold); color: var(--on-gold); font-weight: 700; }
 .btn-gold:hover { background: var(--gold-light); }
-.btn-red { background: var(--red-dim); color: #FDA5AD; border: 1px solid rgba(232,57,74,0.3); }
+.btn-red { background: var(--red-dim); color: #B3202F; border: 1px solid rgba(232,57,74,0.3); }
 .btn-red:hover { background: rgba(232,57,74,0.22); }
 .btn-sm { padding: 5px 11px; font-size: 11.5px; }
 .btn:disabled { opacity: 0.4; cursor: not-allowed; }
@@ -146,18 +138,19 @@ body { font-family: var(--font-body); background: var(--navy); color: var(--txt-
 .page-header h2 { font-family: var(--font-head); font-size: 20px; font-weight: 700; margin-bottom: 4px; }
 .page-header p { font-size: 13px; color: var(--txt-sec); line-height: 1.5; }
 
+.grid-5 { display: grid; grid-template-columns: repeat(5,1fr); gap: 14px; margin-bottom: 20px; }
 .grid-4 { display: grid; grid-template-columns: repeat(4,1fr); gap: 14px; margin-bottom: 20px; }
 .grid-3 { display: grid; grid-template-columns: repeat(3,1fr); gap: 14px; margin-bottom: 20px; }
 .grid-2 { display: grid; grid-template-columns: repeat(2,1fr); gap: 14px; margin-bottom: 20px; }
 .grid-2-1 { display: grid; grid-template-columns: 2fr 1fr; gap: 14px; margin-bottom: 20px; }
 
-.card { background: var(--navy-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px; }
+.card { background: var(--navy-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px; box-shadow: 0 1px 4px rgba(17,17,17,0.04); }
 .card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; gap: 10px; flex-wrap: wrap; }
 .card-title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--txt-muted); }
 .card-action { font-size: 12px; color: var(--gold); cursor: pointer; }
 .card-action:hover { text-decoration: underline; }
 
-.metric-card { background: var(--navy-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px; position: relative; overflow: hidden; }
+.metric-card { background: var(--navy-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px; position: relative; overflow: hidden; box-shadow: 0 1px 4px rgba(17,17,17,0.04); }
 .metric-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; }
 .metric-card.gold::before { background: linear-gradient(90deg, var(--gold), transparent); }
 .metric-card.teal::before { background: linear-gradient(90deg, var(--teal), transparent); }
@@ -171,8 +164,8 @@ body { font-family: var(--font-body); background: var(--navy); color: var(--txt-
 
 .data-table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
 .data-table th { text-align: left; padding: 9px 13px; font-size: 10px; font-weight: 700; letter-spacing: 0.09em; text-transform: uppercase; color: var(--txt-muted); border-bottom: 1px solid var(--border); white-space: nowrap; }
-.data-table td { padding: 11px 13px; border-bottom: 1px solid rgba(255,255,255,0.03); color: var(--txt-sec); }
-.data-table tr:hover td { background: rgba(255,255,255,0.03); color: var(--txt-pri); }
+.data-table td { padding: 11px 13px; border-bottom: 1px solid rgba(17,17,17,0.03); color: var(--txt-sec); }
+.data-table tr:hover td { background: rgba(17,17,17,0.03); color: var(--txt-pri); }
 .data-table tr:last-child td { border-bottom: none; }
 .table-scroll { overflow-x: auto; }
 
@@ -192,15 +185,15 @@ body { font-family: var(--font-body); background: var(--navy); color: var(--txt-
 .alert-icon { font-size: 14px; flex-shrink: 0; margin-top: 1px; }
 .alert-content strong { display: block; font-weight: 700; margin-bottom: 2px; font-size: 13px; }
 .alert-content span { color: var(--txt-muted); font-size: 11.5px; line-height: 1.5; }
-.alert-critical { background: var(--red-dim); border: 1px solid rgba(232,57,74,0.2); color: #FDA5AD; }
-.alert-warning { background: var(--gold-dim); border: 1px solid rgba(240,165,0,0.2); color: #FCD27A; }
-.alert-info { background: rgba(59,130,246,0.08); border: 1px solid rgba(59,130,246,0.2); color: #93C5FD; }
-.alert-success { background: rgba(34,197,94,0.08); border: 1px solid rgba(34,197,94,0.2); color: #86EFAC; }
+.alert-critical { background: var(--red-dim); border: 1px solid rgba(232,57,74,0.2); color: #B3202F; }
+.alert-warning { background: var(--gold-dim); border: 1px solid rgba(240,165,0,0.2); color: #8A5A00; }
+.alert-info { background: rgba(59,130,246,0.08); border: 1px solid rgba(59,130,246,0.2); color: #1D4ED8; }
+.alert-success { background: rgba(34,197,94,0.08); border: 1px solid rgba(34,197,94,0.2); color: #15803D; }
 
 .form-group { margin-bottom: 15px; }
 .form-label { display: block; font-size: 10.5px; font-weight: 700; color: var(--txt-muted); letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 6px; }
 .form-label .req { color: var(--red); }
-.form-input, .form-select, .form-textarea { width: 100%; padding: 10px 13px; background: rgba(255,255,255,0.04); border: 1px solid var(--border); border-radius: 8px; color: var(--txt-pri); font-family: var(--font-body); font-size: 13.5px; transition: border-color 0.2s, background 0.2s; outline: none; }
+.form-input, .form-select, .form-textarea { width: 100%; padding: 10px 13px; background: rgba(17,17,17,0.04); border: 1px solid var(--border); border-radius: 8px; color: var(--txt-pri); font-family: var(--font-body); font-size: 13.5px; transition: border-color 0.2s, background 0.2s; outline: none; }
 .form-input:focus, .form-select:focus, .form-textarea:focus { border-color: var(--gold); background: rgba(240,165,0,0.04); }
 .form-select option { background: var(--navy-mid); color: var(--txt-pri); }
 .form-textarea { resize: vertical; }
@@ -231,25 +224,25 @@ body { font-family: var(--font-body); background: var(--navy); color: var(--txt-
 .setting-row:last-child { border-bottom: none; }
 .setting-info .setting-label { font-size: 13.5px; font-weight: 600; margin-bottom: 3px; }
 .setting-info .setting-desc { font-size: 11.5px; color: var(--txt-muted); }
-.toggle { width: 40px; height: 22px; border-radius: 11px; background: rgba(255,255,255,0.12); cursor: pointer; position: relative; transition: background 0.2s; border: none; flex-shrink: 0; }
+.toggle { width: 40px; height: 22px; border-radius: 11px; background: rgba(17,17,17,0.12); cursor: pointer; position: relative; transition: background 0.2s; border: none; flex-shrink: 0; }
 .toggle.on { background: var(--gold); }
 .toggle::after { content: ''; position: absolute; top: 3px; left: 3px; width: 16px; height: 16px; border-radius: 50%; background: #fff; transition: transform 0.2s; }
 .toggle.on::after { transform: translateX(18px); }
 
-.audit-item { display: flex; gap: 12px; padding: 11px 0; border-bottom: 1px solid rgba(255,255,255,0.04); font-size: 12.5px; }
+.audit-item { display: flex; gap: 12px; padding: 11px 0; border-bottom: 1px solid rgba(17,17,17,0.04); font-size: 12.5px; }
 .audit-item:last-child { border-bottom: none; }
 .audit-dot { width: 8px; height: 8px; border-radius: 50%; margin-top: 5px; flex-shrink: 0; }
 .audit-time { font-family: var(--font-mono); font-size: 10.5px; color: var(--txt-muted); white-space: nowrap; }
 
 ::-webkit-scrollbar { width: 5px; height: 5px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 3px; }
-::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.18); }
+::-webkit-scrollbar-thumb { background: rgba(17,17,17,0.1); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(17,17,17,0.18); }
 
-#offline-banner { display: none; position: fixed; bottom: 16px; right: 16px; z-index: 999; background: var(--gold); color: var(--navy); padding: 10px 16px; border-radius: 8px; font-size: 12.5px; font-weight: 700; box-shadow: 0 8px 24px rgba(0,0,0,0.3); }
+#offline-banner { display: none; position: fixed; bottom: 16px; right: 16px; z-index: 999; background: var(--gold); color: var(--on-gold); padding: 10px 16px; border-radius: 8px; font-size: 12.5px; font-weight: 700; box-shadow: 0 8px 24px rgba(0,0,0,0.3); }
 #save-toast { display: none; position: fixed; bottom: 16px; left: 50%; transform: translateX(-50%); z-index: 999; background: var(--navy-card); border: 1px solid var(--border-gold); color: var(--gold); padding: 10px 18px; border-radius: 8px; font-size: 12.5px; font-weight: 600; box-shadow: 0 8px 24px rgba(0,0,0,0.4); }
 
-@media (max-width: 1100px) { .grid-4 { grid-template-columns: repeat(2,1fr); } }
+@media (max-width: 1100px) { .grid-4, .grid-5 { grid-template-columns: repeat(2,1fr); } }
 @media (max-width: 900px) {
   :root { --sidebar-w: 0px; }
   #sidebar { transform: translateX(-268px); width: 268px; }
@@ -262,13 +255,11 @@ body { font-family: var(--font-body); background: var(--navy); color: var(--txt-
   .grid-2 { grid-template-columns: 1fr; }
   .page { padding: 16px; }
 }
-@media (max-width: 600px) { .grid-4, .grid-3, .grid-2 { grid-template-columns: 1fr; } #topbar { padding: 0 16px 0 58px; } }
+@media (max-width: 600px) { .grid-4, .grid-3, .grid-2, .grid-5 { grid-template-columns: 1fr; } #topbar { padding: 0 16px 0 58px; } }
 @media print { #sidebar, #topbar, #hamburger { display: none !important; } #main { margin: 0; } .page.active { padding: 0; } body { background: #fff; color: #000; } }
 </style>
 </head>
 <body>
-
-<div id="prototype-banner">⚠ Prototype / Design Concept — Not Yet an Official Hosted Government System — For Internal DPM / TWT Review Only</div>
 
 <!-- LOGIN -->
 <div id="login-screen">
@@ -280,7 +271,7 @@ body { font-family: var(--font-body); background: var(--navy); color: var(--txt-
       <div class="emblem-text">
         <div class="country">Independent State of Papua New Guinea</div>
         <div class="system-name">Resigning Officers Register — NGE 2027</div>
-        <div class="system-sub">Department of Personnel Management · v0.1 Prototype</div>
+        <div class="system-sub">Department of Personnel Management</div>
       </div>
     </div>
     <div class="login-divider"></div>
@@ -322,7 +313,7 @@ body { font-family: var(--font-body); background: var(--navy); color: var(--txt-
         <div class="sb-text">
           <div class="sb-badge">PNG · DPM</div>
           <div class="sb-title">NGE 2027 Register</div>
-          <div class="sb-version">v0.1 · Prototype</div>
+          <div class="sb-version">NGE 2027 Register</div>
         </div>
       </div>
       <div class="sb-user-pill">
@@ -337,19 +328,17 @@ body { font-family: var(--font-body); background: var(--navy); color: var(--txt-
       <div class="nav-section">Main</div>
       <div class="nav-item active" onclick="navigate('dashboard')" id="nav-dashboard"><span class="nav-icon">📊</span> Dashboard</div>
       <div class="nav-item" onclick="navigate('newreg')" id="nav-newreg"><span class="nav-icon">➕</span> New Registration</div>
-      <div class="nav-section">Registers</div>
+      <div class="nav-section" id="nav-sec-registers">Registers</div>
       <div class="nav-item" onclick="navigate('agencyheads')" id="nav-agencyheads"><span class="nav-icon">🏛️</span> Agency Heads Register</div>
       <div class="nav-item" onclick="navigate('publicservants')" id="nav-publicservants"><span class="nav-icon">👥</span> Public Servants Register</div>
       <div class="nav-item" onclick="navigate('allrecords')" id="nav-allrecords"><span class="nav-icon">📋</span> Combined Register</div>
-      <div class="nav-section">Committee Review</div>
-      <div class="nav-item" onclick="navigate('feedback')" id="nav-feedback"><span class="nav-icon">💬</span> Give Feedback <span class="nav-badge" id="fb-badge" style="display:none;"></span></div>
       <div class="nav-section">Account</div>
       <div class="nav-item" onclick="navigate('settings')" id="nav-settings"><span class="nav-icon">⚙️</span> Settings</div>
-      <div class="nav-section">System</div>
+      <div class="nav-section" id="nav-sec-system">System</div>
       <div class="nav-item" onclick="navigate('users')" id="nav-users" style="display:none;"><span class="nav-icon">🧑‍💼</span> Manage Users</div>
       <div class="nav-item" onclick="navigate('auditlog')" id="nav-auditlog"><span class="nav-icon">🕓</span> Audit Log</div>
       <div class="nav-item" onclick="navigate('security')" id="nav-security"><span class="nav-icon">🔒</span> Security &amp; Safeguards</div>
-      <div class="nav-item" onclick="navigate('about')" id="nav-about"><span class="nav-icon">ℹ️</span> About This Prototype</div>
+      <div class="nav-item" onclick="navigate('about')" id="nav-about"><span class="nav-icon">ℹ️</span> About This System</div>
     </div>
     <div class="sb-footer">
       <div class="sb-status-row"><span class="live-dot"></span><span class="sb-status-txt" id="sync-status">Synced — data store live</span></div>
@@ -373,9 +362,10 @@ body { font-family: var(--font-body); background: var(--navy); color: var(--txt-
         <h2>Resignation Register Dashboard</h2>
         <p>Live summary of Public Servants &amp; Agency Heads who have submitted resignation letters to contest the 2027 National General Election.</p>
       </div>
-      <div class="grid-4">
+      <div class="grid-5">
         <div class="metric-card gold"><span class="metric-icon">📋</span><div class="metric-label">Total Registered</div><div class="metric-value gold" id="m-total">0</div><div class="metric-target">Agency Heads + Public Servants</div></div>
         <div class="metric-card blue"><span class="metric-icon">🏛️</span><div class="metric-label">Agency Heads</div><div class="metric-value" style="color:var(--blue)" id="m-agency">0</div><div class="metric-target">Provincial admins, CEOs, etc.</div></div>
+        <div class="metric-card green"><span class="metric-icon">👥</span><div class="metric-label">Public Servants</div><div class="metric-value green" id="m-public">0</div><div class="metric-target">Officers resigning to contest NGE 2027</div></div>
         <div class="metric-card teal"><span class="metric-icon">✅</span><div class="metric-label">Acknowledged</div><div class="metric-value teal" id="m-ack">0</div><div class="metric-target">DPM acknowledgement issued</div></div>
         <div class="metric-card red"><span class="metric-icon">⏳</span><div class="metric-label">Pending Verification</div><div class="metric-value red" id="m-pending">0</div><div class="metric-target">Awaiting DPM / PNGEC check</div></div>
       </div>
@@ -389,19 +379,13 @@ body { font-family: var(--font-body); background: var(--navy); color: var(--txt-
           <div class="chart-wrap" style="height:260px;"><canvas id="catChart"></canvas></div>
         </div>
       </div>
-      <div class="grid-2">
-        <div class="card">
-          <div class="card-header"><span class="card-title">Registrations by Province</span></div>
-          <div class="chart-wrap" style="height:230px;"><canvas id="provinceChart"></canvas></div>
-        </div>
-        <div class="card">
-          <div class="card-header"><span class="card-title">Recent Activity</span><span class="card-action" onclick="navigate('auditlog')">View full log →</span></div>
-          <div id="dash-audit"></div>
-        </div>
+      <div class="card">
+        <div class="card-header"><span class="card-title">Registrations by Province</span></div>
+        <div class="chart-wrap" style="height:230px;"><canvas id="provinceChart"></canvas></div>
       </div>
       <div class="card" style="margin-top:14px;">
         <div class="card-header"><span class="card-title">Notices</span></div>
-        <div class="alert alert-info"><span class="alert-icon">ℹ️</span><div class="alert-content"><strong>This is a working, shared prototype</strong><span>Records, status changes and committee feedback are saved to a real shared data store — everyone who opens this link sees the same live register. Seeded entries are sample data only. For operational use with real officers' records, this still needs a DPM-approved hosted database and real authentication — see "About This Prototype".</span></div></div>
+        <div class="alert alert-info"><span class="alert-icon">ℹ️</span><div class="alert-content"><strong>Live, shared departmental register</strong><span>Records and status changes are saved to DPM's shared database — everyone signed in sees the same live register. See "About This System" for how this is hosted and secured.</span></div></div>
       </div>
     </div>
 
@@ -409,7 +393,7 @@ body { font-family: var(--font-body); background: var(--navy); color: var(--txt-
     <div class="page" id="page-newreg">
       <div class="page-header">
         <h2>New Registration</h2>
-        <p>Enter a resignation record exactly as received. All 15 fields mirror the official DPM Secretariat Data Entry Matrix.</p>
+        <p>Enter a resignation record exactly as received. All 18 fields mirror the official DPM Secretariat Data Entry Matrix.</p>
       </div>
       <div class="card" style="max-width:900px;">
         <form id="reg-form" onsubmit="return false;">
@@ -498,6 +482,20 @@ body { font-family: var(--font-body); background: var(--navy); color: var(--txt-
             <label class="form-label">Subject / Details</label>
             <input class="form-input" id="f-subject" placeholder="e.g. Letter of resignation effective 02nd September 2026">
           </div>
+          <div class="grid-2">
+            <div class="form-group">
+              <label class="form-label">National Identification (NID)</label>
+              <input class="form-input" id="f-nid" placeholder="e.g. NID number">
+            </div>
+            <div class="form-group">
+              <label class="form-label">File Number</label>
+              <input class="form-input" id="f-filenumber" placeholder="e.g. DPM/EST/00124">
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Final Entitlement</label>
+            <input class="form-input" id="f-finalentitlement" placeholder="e.g. K 12,450.00 or TBA">
+          </div>
           <div class="form-group">
             <label class="form-label">Remarks</label>
             <textarea class="form-textarea" id="f-remarks" rows="2" placeholder="TBA"></textarea>
@@ -560,26 +558,6 @@ body { font-family: var(--font-body); background: var(--navy); color: var(--txt-
       </div>
     </div>
 
-    <!-- FEEDBACK -->
-    <div class="page" id="page-feedback">
-      <div class="page-header"><h2>Give Feedback</h2><p>Committee comments on this prototype — what works, what's missing, what should change before it goes to production. Visible to everyone reviewing this link, so you can see each other's suggestions.</p></div>
-      <div class="card" style="max-width:700px;">
-        <div class="form-group">
-          <label class="form-label">Your Name / Role</label>
-          <input class="form-input" id="fb-name" placeholder="e.g. Ellison Kalimat, Deputy Secretary">
-        </div>
-        <div class="form-group">
-          <label class="form-label">Comment</label>
-          <textarea class="form-textarea" id="fb-text" rows="3" placeholder="What would you like to see changed or added?"></textarea>
-        </div>
-        <button class="btn btn-gold" id="fb-submit-btn" onclick="submitFeedback()">💬 Submit Comment</button>
-      </div>
-      <div class="card" style="margin-top:14px;max-width:700px;">
-        <div class="card-header"><span class="card-title" id="fb-count">0 comments</span></div>
-        <div id="fb-list"></div>
-      </div>
-    </div>
-
     <!-- AUDIT LOG -->
     <div class="page" id="page-auditlog">
       <div class="page-header"><h2>Audit Log</h2><p>Every create, update and delete action in this session, with the signed-in officer and a timestamp — required for accountability under Section 5.3 of the DBMS design.</p></div>
@@ -625,49 +603,46 @@ body { font-family: var(--font-body); background: var(--navy); color: var(--txt-
 
     <!-- SECURITY -->
     <div class="page" id="page-security">
-      <div class="page-header"><h2>Security &amp; Safeguards</h2><p>Configuration this system is designed around, mapped to the three risk areas raised for this project.</p></div>
+      <div class="page-header"><h2>Security &amp; Safeguards</h2><p>Configuration this system runs on, mapped to the three risk areas raised for this project.</p></div>
       <div class="grid-3">
         <div class="card"><div class="card-header"><span class="card-title">1. Data Privacy</span></div><p style="font-size:12.5px;color:var(--txt-sec);line-height:1.6;">Compliance with public service and electoral law. Only fields required for verification are collected; a retention/disposal rule removes candidate data no longer needed after NGE 2027 in line with DPM records policy.</p></div>
-        <div class="card"><div class="card-header"><span class="card-title">2. Unauthorized Access</span></div><p style="font-size:12.5px;color:var(--txt-sec);line-height:1.6;">Role-based sign-in (Administrator / Data Entry / Verifying / Viewer) is enforced at login. In production this is backed by two-factor authentication (2FA) and encryption of data at rest and in transit.</p></div>
-        <div class="card"><div class="card-header"><span class="card-title">3. System Reliability</span></div><p style="font-size:12.5px;color:var(--txt-sec);line-height:1.6;">Records save automatically as you work. A production deployment adds scheduled backups, a tested disaster-recovery restore procedure, and an offline export as fallback.</p></div>
+        <div class="card"><div class="card-header"><span class="card-title">2. Unauthorized Access</span></div><p style="font-size:12.5px;color:var(--txt-sec);line-height:1.6;">Every officer signs in with their own email and password through Supabase Auth. What each role can see and do — listed below — is enforced twice: in this interface, and again at the database level through row-level security, so a restricted role cannot reach hidden data by any route.</p></div>
+        <div class="card"><div class="card-header"><span class="card-title">3. System Reliability</span></div><p style="font-size:12.5px;color:var(--txt-sec);line-height:1.6;">Records save directly to DPM's hosted database as you work, with every create, update and delete captured in the Audit Log. Scheduled backups and a tested disaster-recovery restore procedure sit at the hosting layer.</p></div>
       </div>
       <div class="card" style="margin-top:14px;">
-        <div class="card-header"><span class="card-title">Role Permissions (this prototype)</span></div>
-        <div class="table-scroll"><table class="data-table"><thead><tr><th>Role</th><th>View Registers</th><th>Add Record</th><th>Edit Status</th><th>Delete Record</th></tr></thead><tbody>
-          <tr><td>Administrator</td><td>✅</td><td>✅</td><td>✅</td><td>✅</td></tr>
-          <tr><td>Data Entry Officer</td><td>✅</td><td>✅</td><td>✅</td><td>—</td></tr>
-          <tr><td>Verifying Officer</td><td>✅</td><td>—</td><td>✅</td><td>—</td></tr>
-          <tr><td>Read-only Viewer</td><td>✅</td><td>—</td><td>—</td><td>—</td></tr>
+        <div class="card-header"><span class="card-title">Role Permissions</span></div>
+        <div class="table-scroll"><table class="data-table"><thead><tr><th>Role</th><th>Pages Accessible</th><th>Add Record</th><th>Edit Status</th><th>Delete Record</th></tr></thead><tbody>
+          <tr><td>Administrator</td><td>Everything, including Manage Users</td><td>✅</td><td>✅</td><td>✅</td></tr>
+          <tr><td>Data Entry Officer</td><td>New Registration, Settings</td><td>✅</td><td>—</td><td>—</td></tr>
+          <tr><td>Verifying Officer</td><td>Dashboard, Registers, Audit Log, Settings</td><td>—</td><td>✅</td><td>—</td></tr>
+          <tr><td>Read-only Viewer</td><td>Dashboard, Registers, Audit Log, Settings</td><td>—</td><td>—</td><td>—</td></tr>
+          <tr><td>Secretary</td><td>Dashboard, Settings</td><td>—</td><td>—</td><td>—</td></tr>
+          <tr><td>Deputy Secretary</td><td>Dashboard, Settings</td><td>—</td><td>—</td><td>—</td></tr>
         </tbody></table></div>
+        <div class="form-hint" style="margin-top:10px;">Settings (your own name and password) stays available to every role — it's account self-service, not a system feature. New accounts start as Read-only Viewer; an Administrator assigns the correct role under "Manage Users".</div>
       </div>
       <div class="card" style="margin-top:14px;">
-        <div class="card-header"><span class="card-title">Security Toggles (illustrative)</span></div>
-        <div class="setting-row"><div class="setting-info"><div class="setting-label">Two-Factor Authentication (2FA)</div><div class="setting-desc">Requires a second verification step at sign-in. Not enforceable in a static prototype — flagged for the production build.</div></div><button class="toggle" id="t-2fa" onclick="this.classList.toggle('on')"></button></div>
-        <div class="setting-row"><div class="setting-info"><div class="setting-label">Encryption at Rest &amp; in Transit</div><div class="setting-desc">Requires a managed database and HTTPS hosting — configured at deployment, not in the front end.</div></div><button class="toggle on" id="t-enc" onclick="this.classList.toggle('on')"></button></div>
-        <div class="setting-row"><div class="setting-info"><div class="setting-label">Scheduled Backups</div><div class="setting-desc">Nightly export of the register to a secure store, with a tested restore procedure.</div></div><button class="toggle on" id="t-bak" onclick="this.classList.toggle('on')"></button></div>
+        <div class="card-header"><span class="card-title">Security Configuration</span></div>
+        <div class="setting-row"><div class="setting-info"><div class="setting-label">Two-Factor Authentication (2FA)</div><div class="setting-desc">Adds a second verification step at sign-in, on top of email and password. Enabled from the Supabase dashboard under Authentication — recommended before this holds real officers' data.</div></div><button class="toggle" id="t-2fa" onclick="this.classList.toggle('on')"></button></div>
+        <div class="setting-row"><div class="setting-info"><div class="setting-label">Encryption at Rest &amp; in Transit</div><div class="setting-desc">Provided by the hosted Postgres database and HTTPS — on by default for a Supabase-hosted deployment.</div></div><button class="toggle on" id="t-enc" onclick="this.classList.toggle('on')"></button></div>
+        <div class="setting-row"><div class="setting-info"><div class="setting-label">Scheduled Backups</div><div class="setting-desc">Automatic daily backups of the register, with a tested restore procedure.</div></div><button class="toggle on" id="t-bak" onclick="this.classList.toggle('on')"></button></div>
       </div>
     </div>
 
     <!-- ABOUT -->
     <div class="page" id="page-about">
-      <div class="page-header"><h2>About This Prototype</h2><p>What this file is, what it already does, and what turning it into a real production system for DPM still requires.</p></div>
+      <div class="page-header"><h2>About This System</h2><p>What this system is, how it's built, and how it's secured.</p></div>
       <div class="card">
         <div class="card-header"><span class="card-title">What this is</span></div>
-        <p style="font-size:13px;color:var(--txt-sec);line-height:1.7;">A self-contained web app built to the same visual system as the DRBMS prototype, implementing the Data Entry Matrix (Agency Heads Register, Public Servants Register) and the Step-by-Step Framework already approved for this project. When published as a Claude artifact it is backed by a real shared, persistent data store — everyone who opens this link sees the same live register, the same audit log and the same committee feedback, and records survive between visits. That is the "backend" this prototype now runs on.</p>
+        <p style="font-size:13px;color:var(--txt-sec);line-height:1.7;">The DPM Resignation Register for the 2027 National General Election — a shared system implementing the Data Entry Matrix (Agency Heads Register, Public Servants Register) and the Step-by-Step Framework approved for this project. Every officer who signs in works from the same live register: records, status changes and the audit log are shared and persistent, and update in real time as colleagues make changes.</p>
       </div>
       <div class="card" style="margin-top:14px;">
-        <div class="card-header"><span class="card-title">What kind of backend this is — and isn't</span></div>
-        <p style="font-size:13px;color:var(--txt-sec);line-height:1.7;margin-bottom:10px;">This is Claude's built-in artifact storage, not the department's own database. It is genuinely shared and persistent, which makes it good for this stage — committee review, layout and workflow feedback. It is not yet the production system described in the DBMS proposal:</p>
-        <ul style="font-size:13px;color:var(--txt-sec);line-height:1.9;padding-left:18px;">
-          <li>Data lives inside Claude's platform, not on a DPM-owned or DPM-approved server — EM MIS should confirm whether that is acceptable for public-service resignation records even at review stage.</li>
-          <li>The published link is public and unauthenticated by default — anyone with the URL can open it. There is no password, no expiry, and no way to restrict it to committee members only, unless DPM's Claude plan is Team/Enterprise (which allows organization-only sharing instead of a public link).</li>
-          <li>Sign-in on this page is a role-selector for demonstration, not real authentication — it does not enforce 2FA or verify identity.</li>
-          <li>Moving to production still means what Section 5–7 of the DBMS proposal covers: a Vertabelo/DbSchema-modelled database on a DPM-approved host, real authentication with 2FA, and the HRIS/PNGEC integrations.</li>
-        </ul>
+        <div class="card-header"><span class="card-title">How it's built</span></div>
+        <p style="font-size:13px;color:var(--txt-sec);line-height:1.7;">The front end is a single web app; the data sits in a hosted Postgres database (Supabase), with Supabase Auth handling sign-in and row-level security enforcing exactly what each role can see and do — see "Security &amp; Safeguards" for the full breakdown.</p>
       </div>
       <div class="card" style="margin-top:14px;">
-        <div class="card-header"><span class="card-title">Data in this version</span></div>
-        <p style="font-size:13px;color:var(--txt-sec);line-height:1.7;">The two seeded entries are clearly-labelled sample data, not real officers' records — real names, phone numbers and emails have been left out of this shareable version deliberately, since the link is public. Once EM MIS confirms hosting and access control, real entries can be loaded before this goes into operational use.</p>
+        <div class="card-header"><span class="card-title">Roles in use</span></div>
+        <p style="font-size:13px;color:var(--txt-sec);line-height:1.7;">Administrator, Data Entry Officer, Verifying Officer, Read-only Viewer, Secretary and Deputy Secretary. An Administrator assigns roles under "Manage Users"; every new account starts as a Read-only Viewer until promoted.</p>
       </div>
     </div>
 
@@ -700,8 +675,8 @@ body { font-family: var(--font-body); background: var(--navy); color: var(--txt-
 // (Project Settings → API in the Supabase dashboard). The anon key is
 // safe to expose here; row-level security in schema.sql controls access.
 // ═══════════════════════════════════════════
-const SUPABASE_URL = 'https://utupwjbjjlwsobeihnog.supabase.co';
-const SUPABASE_ANON_KEY = 'sb_publishable_JrbbxMWnA-iRR417hN58GA_qO6dhA9z';
+const SUPABASE_URL = 'https://YOUR-PROJECT.supabase.co';
+const SUPABASE_ANON_KEY = 'YOUR-ANON-PUBLIC-KEY';
 const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 // ═══════════════════════════════════════════
@@ -711,7 +686,6 @@ const PROVINCES = ['Central','Chimbu (Simbu)','Eastern Highlands','East New Brit
 
 let records = [];
 let auditLog = [];
-let feedback = [];
 let allUsers = [];
 let currentUser = { id: null, name: '', role: 'Read-only Viewer' };
 let filters = { cat: 'All', status: 'All' };
@@ -721,19 +695,17 @@ let realtimeChannel = null;
 // DATA LOADING (Supabase Postgres, shared across every signed-in officer)
 // ═══════════════════════════════════════════
 async function loadData() {
-  const [{ data: recData, error: recErr }, { data: auditData, error: auditErr }, { data: fbData, error: fbErr }] = await Promise.all([
+  const [{ data: recData, error: recErr }, { data: auditData, error: auditErr }] = await Promise.all([
     sb.from('resignation_records').select('*').order('created_at', { ascending: false }),
-    sb.from('audit_log').select('*').order('ts', { ascending: false }).limit(300),
-    sb.from('feedback').select('*').order('created_at', { ascending: false })
+    sb.from('audit_log').select('*').order('ts', { ascending: false }).limit(300)
   ]);
-  if (recErr || auditErr || fbErr) {
-    console.error('Load error:', recErr || auditErr || fbErr);
+  if (recErr || auditErr) {
+    console.error('Load error:', recErr || auditErr);
     document.getElementById('sync-status').textContent = 'Connection error — check console';
     return;
   }
   records = (recData || []).map(fromDbRecord);
   auditLog = (auditData || []).map(a => ({ action: a.action, detail: a.detail, user: a.user_name, role: a.role, ts: a.ts }));
-  feedback = (fbData || []).map(f => ({ name: f.name, text: f.comment, role: f.role, ts: f.created_at }));
   document.getElementById('sync-status').textContent = 'Synced — shared department register';
   subscribeRealtime();
 }
@@ -744,7 +716,8 @@ function fromDbRecord(r) {
     id: r.id, category: r.category, name: r.name, designation: r.designation, agency: r.agency,
     institution: r.institution, province: r.province, electorate: r.electorate, party: r.party,
     resigndate: r.resign_date, receiveddate: r.received_date, ackdate: r.ack_date,
-    phone: r.phone, email: r.email, subject: r.subject, status: r.status, remarks: r.remarks,
+    phone: r.phone, email: r.email, subject: r.subject, nid: r.nid, fileNumber: r.file_number,
+    finalEntitlement: r.final_entitlement, status: r.status, remarks: r.remarks,
     enteredBy: r.entered_by_name, ts: r.created_at
   };
 }
@@ -755,8 +728,7 @@ function subscribeRealtime() {
   if (realtimeChannel) return;
   realtimeChannel = sb.channel('nge2027-live')
     .on('postgres_changes', { event: '*', schema: 'public', table: 'resignation_records' }, async () => { await refreshRecordsOnly(); renderAll(); })
-    .on('postgres_changes', { event: '*', schema: 'public', table: 'audit_log' }, async () => { await refreshAuditOnly(); renderAuditFull(); renderDashAudit(); })
-    .on('postgres_changes', { event: '*', schema: 'public', table: 'feedback' }, async () => { await refreshFeedbackOnly(); renderFeedback(); })
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'audit_log' }, async () => { await refreshAuditOnly(); renderAuditFull(); })
     .subscribe();
 }
 async function refreshRecordsOnly() {
@@ -766,33 +738,6 @@ async function refreshRecordsOnly() {
 async function refreshAuditOnly() {
   const { data } = await sb.from('audit_log').select('*').order('ts', { ascending: false }).limit(300);
   auditLog = (data || []).map(a => ({ action: a.action, detail: a.detail, user: a.user_name, role: a.role, ts: a.ts }));
-}
-async function refreshFeedbackOnly() {
-  const { data } = await sb.from('feedback').select('*').order('created_at', { ascending: false });
-  feedback = (data || []).map(f => ({ name: f.name, text: f.comment, role: f.role, ts: f.created_at }));
-}
-
-async function submitFeedback() {
-  const name = document.getElementById('fb-name').value.trim() || currentUser.name || 'Anonymous';
-  const text = document.getElementById('fb-text').value.trim();
-  if (!text) { alert('Please write a comment first.'); return; }
-  const { error } = await sb.from('feedback').insert({ name, role: currentUser.role, comment: text });
-  if (error) { alert('Could not save your comment: ' + error.message); return; }
-  document.getElementById('fb-text').value = '';
-  await logAudit('Feedback', `${name} left a comment on the prototype`);
-  await refreshFeedbackOnly();
-  showToast();
-  renderFeedback();
-}
-
-function renderFeedback() {
-  document.getElementById('fb-count').textContent = feedback.length + ' comment' + (feedback.length === 1 ? '' : 's');
-  document.getElementById('fb-list').innerHTML = feedback.map(f => `
-    <div class="audit-item"><span class="audit-dot" style="background:var(--gold)"></span>
-    <div style="flex:1;"><div style="font-size:13px;color:var(--txt-pri);"><strong>${f.name}</strong> <span style="color:var(--txt-muted);font-size:11px;">(${f.role})</span></div>
-    <div style="font-size:12.5px;margin:3px 0;">${f.text}</div><div class="audit-time">${new Date(f.ts).toLocaleString()}</div></div></div>`).join('') || '<p style="color:var(--txt-muted);font-size:12.5px;">No comments yet — be the first to leave feedback.</p>';
-  const badge = document.getElementById('fb-badge');
-  if (feedback.length > 0) { badge.style.display = 'inline-block'; badge.textContent = feedback.length; } else { badge.style.display = 'none'; }
 }
 
 function showToast() {
@@ -874,6 +819,7 @@ async function afterSignIn() {
   await refreshAuditOnly();
   populateProvinceSelect();
   renderAll();
+  navigate(defaultPageFor(currentUser.role));
 }
 async function doLogout() {
   await logAudit('Sign out', `${currentUser.name} signed out`);
@@ -883,10 +829,32 @@ async function doLogout() {
   document.getElementById('app').classList.remove('visible');
   document.getElementById('login-screen').style.display = 'flex';
 }
+// Which pages each role may open. "settings" (own account) is intentionally
+// available to every role — it's not a system feature, just account self-service.
+const ROLE_PAGES = {
+  'Administrator':        ['dashboard','newreg','agencyheads','publicservants','allrecords','settings','users','auditlog','security','about'],
+  'Data Entry Officer':   ['newreg','settings'],
+  'Verifying Officer':    ['dashboard','agencyheads','publicservants','allrecords','settings','auditlog','security','about'],
+  'Read-only Viewer':     ['dashboard','agencyheads','publicservants','allrecords','settings','auditlog','security','about'],
+  'Secretary':            ['dashboard','settings'],
+  'Deputy Secretary':     ['dashboard','settings']
+};
+const NAV_IDS = { dashboard:'nav-dashboard', newreg:'nav-newreg', agencyheads:'nav-agencyheads', publicservants:'nav-publicservants', allrecords:'nav-allrecords', settings:'nav-settings', users:'nav-users', auditlog:'nav-auditlog', security:'nav-security', about:'nav-about' };
+function allowedPages() { return ROLE_PAGES[currentUser.role] || ['dashboard','settings']; }
+function defaultPageFor(role) { const list = ROLE_PAGES[role] || ['dashboard']; return list[0]; }
 function applyRolePermissions() {
-  const canAdd = currentUser.role !== 'Read-only Viewer';
-  document.getElementById('nav-newreg').style.display = canAdd ? 'flex' : 'none';
-  document.getElementById('nav-users').style.display = currentUser.role === 'Administrator' ? 'flex' : 'none';
+  const allowed = allowedPages();
+  Object.keys(NAV_IDS).forEach(p => {
+    const el = document.getElementById(NAV_IDS[p]);
+    if (!el) return;
+    const ok = p === 'users' ? (currentUser.role === 'Administrator') : allowed.includes(p);
+    el.style.display = ok ? 'flex' : 'none';
+  });
+  // Hide section headers that would otherwise sit above an empty group
+  const registersVisible = ['agencyheads','publicservants','allrecords'].some(p => allowed.includes(p));
+  document.getElementById('nav-sec-registers').style.display = registersVisible ? 'block' : 'none';
+  const systemVisible = ['users','auditlog','security','about'].some(p => allowed.includes(p) || p === 'users' && currentUser.role === 'Administrator');
+  document.getElementById('nav-sec-system').style.display = systemVisible ? 'block' : 'none';
 }
 
 // Returning visitor with a still-valid Supabase session: skip the login screen
@@ -902,7 +870,7 @@ async function renderUsers() {
   const { data, error } = await sb.from('profiles').select('*').order('created_at', { ascending: true });
   if (error) { console.error(error); return; }
   allUsers = data || [];
-  const roleOpts = ['Administrator','Data Entry Officer','Verifying Officer','Read-only Viewer'];
+  const roleOpts = ['Administrator','Data Entry Officer','Verifying Officer','Read-only Viewer','Secretary','Deputy Secretary'];
   document.getElementById('users-table').querySelector('tbody').innerHTML = allUsers.map(u => `
     <tr><td>${u.full_name}${u.id === currentUser.id ? ' <span style="color:var(--txt-muted);font-size:11px;">(you)</span>' : ''}</td>
     <td><select class="form-select" style="padding:4px 8px;font-size:11px;" onchange="changeUserRole('${u.id}',this.value)">
@@ -949,18 +917,21 @@ async function changePassword() {
 // ═══════════════════════════════════════════
 // NAVIGATION
 // ═══════════════════════════════════════════
-const PAGE_TITLES = { dashboard:'Dashboard', newreg:'New Registration', agencyheads:'Agency Heads Register', publicservants:'Public Servants Register', allrecords:'Combined Register', feedback:'Committee Feedback', auditlog:'Audit Log', users:'Manage Users', settings:'Settings', security:'Security & Safeguards', about:'About This Prototype' };
+const PAGE_TITLES = { dashboard:'Dashboard', newreg:'New Registration', agencyheads:'Agency Heads Register', publicservants:'Public Servants Register', allrecords:'Combined Register', auditlog:'Audit Log', users:'Manage Users', settings:'Settings', security:'Security & Safeguards', about:'About This System' };
 function navigate(page) {
+  const allowed = allowedPages();
+  const permitted = page === 'users' ? currentUser.role === 'Administrator' : allowed.includes(page);
+  if (!permitted) page = defaultPageFor(currentUser.role);
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
   document.getElementById('page-' + page).classList.add('active');
-  document.getElementById('nav-' + page).classList.add('active');
+  const navEl = document.getElementById('nav-' + page);
+  if (navEl) navEl.classList.add('active');
   document.getElementById('tb-title').textContent = PAGE_TITLES[page];
   if (window.innerWidth <= 900) document.getElementById('sidebar').classList.remove('open');
   if (page === 'agencyheads' || page === 'publicservants' || page === 'allrecords') renderRegisters();
   if (page === 'auditlog') renderAuditFull();
   if (page === 'dashboard') renderDashboard();
-  if (page === 'feedback') renderFeedback();
   if (page === 'users') renderUsers();
   if (page === 'settings') { document.getElementById('set-name').value = currentUser.name; document.getElementById('set-role').value = currentUser.role; }
 }
@@ -974,7 +945,7 @@ function populateProvinceSelect() {
   PROVINCES.forEach(p => { const o = document.createElement('option'); o.value = p; o.textContent = p; sel.appendChild(o); });
 }
 function clearRegForm() {
-  ['f-name','f-designation','f-agency','f-institution','f-electorate','f-party','f-resigndate','f-receiveddate','f-ackdate','f-phone','f-email','f-subject','f-remarks'].forEach(id => document.getElementById(id).value = '');
+  ['f-name','f-designation','f-agency','f-institution','f-electorate','f-party','f-resigndate','f-receiveddate','f-ackdate','f-phone','f-email','f-subject','f-nid','f-filenumber','f-finalentitlement','f-remarks'].forEach(id => document.getElementById(id).value = '');
   document.getElementById('f-province').value = '';
   document.getElementById('f-category').value = 'Agency Head';
   document.getElementById('f-status').value = 'Received';
@@ -998,6 +969,9 @@ async function submitRegistration() {
     phone: document.getElementById('f-phone').value.trim(),
     email: document.getElementById('f-email').value.trim(),
     subject: val('f-subject'),
+    nid: val('f-nid'),
+    file_number: val('f-filenumber'),
+    final_entitlement: val('f-finalentitlement'),
     status: document.getElementById('f-status').value,
     remarks: document.getElementById('f-remarks').value.trim() || 'TBA',
     entered_by: currentUser.id,
@@ -1127,18 +1101,13 @@ function renderAuditFull() {
     <div class="audit-item"><span class="audit-dot" style="background:${auditDotColor(a.action)}"></span>
     <div style="flex:1;"><div>${a.detail}</div><div class="audit-time">${new Date(a.ts).toLocaleString()}</div></div></div>`).join('') || '<p style="color:var(--txt-muted);font-size:12.5px;">No activity yet.</p>';
 }
-function renderDashAudit() {
-  document.getElementById('dash-audit').innerHTML = auditLog.slice(0,6).map(a => `
-    <div class="audit-item"><span class="audit-dot" style="background:${auditDotColor(a.action)}"></span>
-    <div style="flex:1;"><div style="font-size:12px;">${a.detail}</div><div class="audit-time">${new Date(a.ts).toLocaleString()}</div></div></div>`).join('') || '<p style="color:var(--txt-muted);font-size:12.5px;">No activity yet.</p>';
-}
 
 // ═══════════════════════════════════════════
 // CSV EXPORT
 // ═══════════════════════════════════════════
 function exportCSV() {
-  const headers = ['Category','Name','Designation','Agency','Institution Category','Province','Electorate','Party','Date of Resignation','Date Received','Date Acknowledged','Phone','Email','Subject','Status','Remarks','Entered By'];
-  const rows = records.map(r => [r.category,r.name,r.designation,r.agency,r.institution,r.province,r.electorate,r.party,r.resigndate,r.receiveddate,r.ackdate,r.phone,r.email,r.subject,r.status,r.remarks,r.enteredBy]);
+  const headers = ['Category','Name','Designation','Agency','Institution Category','Province','Electorate','Party','Date of Resignation','Date Received','Date Acknowledged','Phone','Email','Subject','NID','File Number','Final Entitlement','Status','Remarks','Entered By'];
+  const rows = records.map(r => [r.category,r.name,r.designation,r.agency,r.institution,r.province,r.electorate,r.party,r.resigndate,r.receiveddate,r.ackdate,r.phone,r.email,r.subject,r.nid,r.fileNumber,r.finalEntitlement,r.status,r.remarks,r.enteredBy]);
   const csv = [headers, ...rows].map(row => row.map(c => `"${String(c||'').replace(/"/g,'""')}"`).join(',')).join('\n');
   const blob = new Blob([csv], { type: 'text/csv' });
   const url = URL.createObjectURL(blob);
@@ -1156,12 +1125,12 @@ let charts = {};
 function renderDashboard() {
   document.getElementById('m-total').textContent = records.length;
   document.getElementById('m-agency').textContent = records.filter(r => r.category === 'Agency Head').length;
+  document.getElementById('m-public').textContent = records.filter(r => r.category === 'Public Servant').length;
   document.getElementById('m-ack').textContent = records.filter(r => r.status === 'Acknowledged' || r.status === 'Released to PNGEC').length;
   document.getElementById('m-pending').textContent = records.filter(r => r.status === 'Received' || r.status === 'Under Verification').length;
-  renderDashAudit();
 
   if (typeof Chart === 'undefined') { return; }
-  const tick = 'rgba(240,244,255,0.55)', grid = 'rgba(255,255,255,0.06)', font = { family: 'Outfit', size: 11 };
+  const tick = 'rgba(17,17,17,0.60)', grid = 'rgba(17,17,17,0.08)', font = { family: 'Outfit', size: 11 };
   Object.values(charts).forEach(c => c.destroy());
   charts = {};
 
@@ -1190,7 +1159,7 @@ function renderDashboard() {
     options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { beginAtZero: true, ticks: { color: tick, font, stepSize:1 }, grid: { color: grid } }, y: { grid: { display:false }, ticks: { color: tick, font: { family:'Outfit', size:10 } } } } }
   });
 }
-function renderAll() { renderRegisters(); renderDashboard(); renderAuditFull(); renderFeedback(); }
+function renderAll() { renderRegisters(); renderDashboard(); renderAuditFull(); }
 
 // ═══════════════════════════════════════════
 // MODALS
